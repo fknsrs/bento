@@ -1,0 +1,19 @@
+{
+  "name": "bento",
+  "version": "1.0.0",
+  "description": "compartmentalize your ui",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fknsrs/bento"
+  },
+  "keywords": [
+    "jetty",
+    "ui"
+  ],
+  "author": "Conrad Pankoff",
+  "license": "BSD"
+}
