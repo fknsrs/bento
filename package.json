@@ -17,6 +17,7 @@
   "author": "Conrad Pankoff <deoxxa@fknsrs.biz> (http://www.fknsrs.biz/)",
   "license": "BSD",
   "dependencies": {
-    "jetty": "~0.1.0"
+    "jetty": "~0.1.0",
+    "steez": "~0.4.2"
   }
 }
