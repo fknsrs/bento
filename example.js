@@ -19,7 +19,7 @@ container.on("reflow", function() {
 });
 
 // window title thing
-container.addWidget(new Bento.Widget(), {height: 1, name: "title"});
+container.addWidget(new Bento.Text({content: "Bento Example"}), {height: 1, name: "title"});
 
 // main content
 container.addWidget(new Bento.Widget(), {name: "main"});
