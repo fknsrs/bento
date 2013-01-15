@@ -1,103 +1,77 @@
+
+// requires
 var fs = require('fs');
+var Bento = require('./lib/bento');
+var Prompt = require('./lib/prompt');
 
-// Jetty
-var Jetty = require('jetty');
-var jetty = new Jetty(process.stdout);
-jetty.clear().hide().moveTo([0,0]);
+// setup bento
+var bento = new Bento(process.stdout);
 
-
-// capture stream
-var Stream = require('stream').Stream;
-var util = require('util');
-var Prompt = function(inputStream) {
-  Stream.call(this);
-  this.writable = true;
-  this.readable = true;
-  this._str = '';
-  this._outputLine = 0;
-
-  // input stream
-  inputStream.resume();
-  inputStream.setRawMode(true);
-  inputStream.pipe(this);
-};
-util.inherits(Prompt, Stream);
-
-// todo: we should limit this to only accept one byte
-// todo: handle multibyte
-Prompt.prototype.write = function(buffer) {
-  
-  // break?
-  switch(buffer[0]) {
-    
-    // Ctrl-C
-    case 0x03:
-      this.emit('end');
-      return;
-
-    // arrows
-    case 0x1b:
-
-      if (buffer[1] == 0x5b) {
-        // up
-        if (buffer[2] == 0x41) {
-          this.emit('scrollUp');
-        }
-        // down
-        else if (buffer[2] == 0x42) {
-          this.emit('scrollDown');
-        }
-      }
-      
-  }
-
-  return this.writable;
-};
-
-
+// setup prompt
 var prompt = new Prompt(process.stdin);
-
 prompt.on('end', function(){
+  bento.jetty.clear().show();
   console.log('exiting program...');
   process.exit();
 });
 
-var ScrollableBox = function() {
-  // this._dim = [20, 40];
-  this._buffer = fs.readFileSync('chats.txt').toString().split(/\n/);
-  this._scrollPos = -1;
-};
+// custom keypress events
+prompt.on('keypress', function(buffer) {
+  switch (buffer[0]) {
+    case 0x1b:
 
-ScrollableBox.prototype.scrollUp = function() {
-  this._scrollPos--;
-  this.draw();
-};
-
-ScrollableBox.prototype.scrollDown = function() {
-  this._scrollPos++;
-  if (this._scrollPos > 0){
-    this._scrollPos = 0;
+      if (buffer[1] == 0x5b) {
+        // up-arrow
+        if (buffer[2] == 0x41) {
+          this.emit('scrollUp');
+        }
+        // down-arrow
+        else if (buffer[2] == 0x42) {
+          this.emit('scrollDown');
+        }
+      }
   }
-  this.draw();
-};
+});
 
-ScrollableBox.prototype.clear = function() {
-  for (var _y=0; _y<20; _y++) {
-    jetty.moveTo([_y,40]).clearLine();  
+// create a widget
+var scrolly = bento.box({
+  dimensions: [20, 40],
+  initialize: function initialize() {
+    this.buffer = fs.readFileSync('chats.txt').toString().split(/\n/);
+    this.scrollPos = 0;  
+  },
+  scrollUp: function scrollUp() {
+    this.scrollPos--;
+    this.draw();
+  },
+  scrollDown: function scrollDown() {
+    this.scrollPos++;
+    if (this.scrollPos > 0){
+      this.scrollPos = 0;
+    }
+    this.draw();
+  },
+  draw: function draw() {
+    this.clear();
+    
+    this.caret.moveTo(this.bound.limit.y, 0);
+    var _line, _i = this.buffer.length - 1 + this.scrollPos;
+    while (this.bound.caretInBounds(this.caret)) {
+      _line = this.buffer[_i];
+      if (_line) {
+        this.jetty.text(_line.slice(0, 40));
+      }
+      // out of range
+      else {
+        this.scrollPos++;
+      }
+      
+      this.caret.y = this.caret.y - 1;
+      this.caret.move();
+      _i -= 1;
+    }
   }
-};
+});
 
-ScrollableBox.prototype.draw = function() {
-  this.clear();
-  jetty.moveTo([0,0]);
-  var _line = 0;
-  this._buffer.slice(-20+this._scrollPos, this._scrollPos).forEach(function(line){
-    jetty.text(line.slice(0, 40)).moveTo([_line++,0]);
-  }.bind(this));
-};
-
-var box = new ScrollableBox();
-box.draw();
-
-prompt.on('scrollUp', box.scrollUp.bind(box));
-prompt.on('scrollDown', box.scrollDown.bind(box));
+prompt.on('scrollUp', scrolly.scrollUp.bind(scrolly));
+prompt.on('scrollDown', scrolly.scrollDown.bind(scrolly));
