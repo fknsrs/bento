@@ -1,4 +1,3 @@
-
 // requires
 var fs = require('fs');
 var Bento = require('./lib/bento');
@@ -38,18 +37,27 @@ var scrolly = bento.box({
   dimensions: [20, 40],
   initialize: function initialize() {
     this.buffer = fs.readFileSync('chats.txt').toString().split(/\n/);
-    this.scrollPos = 0;  
+    this.scrollPos = 0;
+    this.autoScroll = true;
   },
   scrollUp: function scrollUp() {
     this.scrollPos--;
-    this.draw();
+    this.autoScroll = false;
+    this.emit('draw');
   },
   scrollDown: function scrollDown() {
     this.scrollPos++;
-    if (this.scrollPos > 0){
+    if (this.scrollPos >= 0){
       this.scrollPos = 0;
+      this.autoScroll = true;
     }
-    this.draw();
+    this.emit('draw');
+  },
+  data: function data(data) {
+    this.buffer.push(data.toString());
+    if (this.autoScroll) {
+      this.emit('draw');
+    }
   },
   draw: function draw() {
     this.clear();
@@ -73,5 +81,12 @@ var scrolly = bento.box({
   }
 });
 
-prompt.on('scrollUp', scrolly.scrollUp.bind(scrolly));
-prompt.on('scrollDown', scrolly.scrollDown.bind(scrolly));
+prompt.on('scrollUp',   function() { scrolly.emit('scrollUp'); });
+prompt.on('scrollDown', function() { scrolly.emit('scrollDown'); });
+
+// fake scrolly traffic
+var c = 'a'.charCodeAt(0);
+setInterval(function() {
+  scrolly.write(String.fromCharCode(c,c,c,c,c,c,c,c,c))
+  if (++c > 'z'.charCodeAt(0)) c = 'a'.charCodeAt(0);
+}, 1000);
