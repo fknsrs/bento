@@ -2,7 +2,7 @@
   "name": "bento",
   "version": "0.1.0",
   "description": "compartmentalize your ui",
-  "main": "index.js",
+  "main": "lib/bento.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -17,7 +17,6 @@
   "author": "Conrad Pankoff <deoxxa@fknsrs.biz> (http://www.fknsrs.biz/)",
   "license": "BSD",
   "dependencies": {
-    "jetty": "~0.1.0",
-    "steez": "~0.4.2"
+    "jetty": "~0.1.0"
   }
 }
