@@ -34,6 +34,7 @@ prompt.on('keypress', function(buffer) {
 
 // create a widget
 var scrolly = bento.box({
+  position:   [5,5],
   dimensions: [20, 40],
   initialize: function initialize() {
     this.buffer = fs.readFileSync('chats.txt').toString().split(/\n/);
@@ -41,42 +42,37 @@ var scrolly = bento.box({
     this.autoScroll = true;
   },
   scrollUp: function scrollUp() {
-    this.scrollPos--;
-    this.autoScroll = false;
+    this.scrollPos++;
+    if (this.scrollPos >= this.buffer.length - this.bound.height) {
+      this.scrollPos--;
+    }
+    else if (this.scrollPos > 0) {
+      this.autoScroll = false;  
+    }
     this.emit('draw');
   },
   scrollDown: function scrollDown() {
-    this.scrollPos++;
-    if (this.scrollPos >= 0){
+    this.scrollPos--;
+    if (this.scrollPos <= 0){
       this.scrollPos = 0;
       this.autoScroll = true;
     }
     this.emit('draw');
   },
   data: function data(data) {
-    this.buffer.push(data.toString());
+    this.buffer.unshift(data.toString());
     if (this.autoScroll) {
       this.emit('draw');
     }
   },
   draw: function draw() {
-    this.clear();
-    
     this.caret.moveTo(this.bound.limit.y, 0);
-    var _line, _i = this.buffer.length - 1 + this.scrollPos;
-    while (this.bound.caretInBounds(this.caret)) {
-      _line = this.buffer[_i];
-      if (_line) {
-        this.jetty.text(_line.slice(0, 40));
+    var _line = null, _i = 0;
+    while (this.bound.caretInBounds(this.caret) && _line !== undefined) {
+      if (_line=this.buffer[_i++ + this.scrollPos]) {
+        this.row(_line.slice(0, 40));
+        this.caret.moveTo('-1', 0);
       }
-      // out of range
-      else {
-        this.scrollPos++;
-      }
-      
-      this.caret.y = this.caret.y - 1;
-      this.caret.move();
-      _i -= 1;
     }
   }
 });
