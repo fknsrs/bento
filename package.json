@@ -14,7 +14,7 @@
     "jetty",
     "ui"
   ],
-  "author": "Conrad Pankoff <deoxxa@fknsrs.biz> (http://www.fknsrs.biz/)",
+  "author": "Naomi Kyoto <nakyoto@gmail.com>",
   "license": "BSD",
   "dependencies": {
     "jetty": "~0.1.0"
