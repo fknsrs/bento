@@ -1,6 +1,6 @@
 {
   "name": "bento",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "compartmentalize your ui",
   "main": "lib/bento.js",
   "scripts": {
